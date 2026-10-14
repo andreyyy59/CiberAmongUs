@@ -105,8 +105,16 @@ juegociber/
 ---
 
 ## 🌐 Publicarlo en internet (opcional)
-Sube la carpeta a GitHub y créalo como **Web Service** en https://render.com (plan gratis):
-- Build command: `npm install`
-- Start command: `npm start`
 
-Render te da un enlace público para jugar desde cualquier casa.
+Se puede publicar gratis en **[Railway](https://railway.com)** (incluye un crédito de prueba):
+
+1. Sube el proyecto a GitHub.
+2. Entra a railway.com e inicia sesión con GitHub.
+3. **New Project → Deploy from GitHub repo** y elige este repositorio. Railway detecta Node.js solo y ejecuta `npm install` y `npm start`.
+4. Cuando el servicio aparezca como **Online**, ábrelo y ve a **Settings → Networking → Generate Domain** (si pide el puerto, pon `3000`).
+5. Railway te da un enlace público tipo `https://tu-proyecto.up.railway.app` para jugar desde cualquier lugar.
+
+**Notas:**
+- Para partidas normales se necesitan mínimo 3 jugadores. Para una demo con menos gente, en **Settings → Deploy → Custom Start Command** usa `npm run prueba`.
+- No requiere variables de entorno.
+- El servidor funciona con WebSockets, por eso necesita un servicio que corra continuamente (no sirve GitHub Pages).
