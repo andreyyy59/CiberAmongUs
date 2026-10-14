@@ -1,0 +1,17 @@
+{
+  "name": "red-segura",
+  "version": "0.1.0",
+  "description": "Juego multijugador 2D tipo Among Us para aprender ciberseguridad",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "prueba": "node server.js --prueba"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "socket.io": "^4.8.1"
+  }
+}

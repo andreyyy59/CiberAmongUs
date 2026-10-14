@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Red Segura</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Russo+One&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <canvas id="bg"></canvas>
+
+  <!-- ============ INICIO ============ -->
+  <section id="screen-home" class="screen active">
+    <div class="home-wrap">
+      <canvas id="hero-bot" width="220" height="200"></canvas>
+      <h1 class="logo" data-text="RED SEGURA">RED SEGURA</h1>
+      <p class="tagline">Uno de los robots de la red es un <b class="virus-word">virus disfrazado</b>. Cumplan sus misiones de seguridad y descúbranlo antes de que infecte a todos.</p>
+
+      <div class="panel home-panel">
+        <label class="field">
+          <span>¿Cómo se llama tu robot?</span>
+          <input id="in-name" maxlength="14" placeholder="Ej: Andrey" autocomplete="off">
+        </label>
+        <button id="btn-create" class="btn big primary">⚡ Crear una sala</button>
+        <div class="divider"><span>¿Te pasaron un código?</span></div>
+        <div class="join-row">
+          <input id="in-code" maxlength="4" placeholder="ABCD" autocomplete="off" aria-label="Código de la sala">
+          <button id="btn-join" class="btn big">🚀 Entrar</button>
+        </div>
+        <p id="home-error" class="error" role="alert"></p>
+      </div>
+
+      <details class="how panel">
+        <summary>¿Cómo se juega?</summary>
+        <ul>
+          <li><span class="how-ico">🛡️</span><div><b>Si eres Defensor:</b> recorre la red y cumple tus misiones. Cada misión sube el escudo; al llegar al 100 % ganan.</div></li>
+          <li><span class="how-ico">🦠</span><div><b>Si eres el Malware:</b> finge que trabajas, infecta robots cuando nadie te vea y lanza ataques para crear caos.</div></li>
+          <li><span class="how-ico">📢</span><div><b>¿Viste un robot infectado?</b> Repórtalo. En la reunión responde la pregunta (si aciertas, tu voto vale doble) y voten a quién expulsar.</div></li>
+          <li><span class="how-ico">🎮</span><div><kbd>WASD</kbd> o flechas para moverte · <kbd>E</kbd> usar · <kbd>R</kbd> reportar · <kbd>Q</kbd> infectar · <kbd>V</kbd> puerto secreto</div></li>
+        </ul>
+      </details>
+    </div>
+  </section>
+
+  <!-- ============ SALA DE ESPERA ============ -->
+  <section id="screen-lobby" class="screen">
+    <div class="panel lobby-card">
+      <div class="lobby-head">
+        <div>
+          <p class="muted">Código de la sala</p>
+          <div class="code-row">
+            <div id="lobby-code" class="room-code">----</div>
+            <button id="btn-copy" class="btn small">📋 Copiar</button>
+          </div>
+          <p class="muted small">Díctaselo a tus compañeros para que entren.</p>
+        </div>
+        <button id="btn-leave" class="btn small ghost-btn">Salir</button>
+      </div>
+      <h3 class="lobby-title">Robots conectados <span id="lobby-count" class="count-pill"></span></h3>
+      <p class="hint">👆 Toca tu robot para cambiarle el accesorio.</p>
+      <div id="lobby-players" class="lobby-players"></div>
+      <div class="lobby-chat">
+        <div id="lobby-chat-log" class="chat-log"></div>
+        <form id="lobby-chat-form" class="chat-form">
+          <input id="lobby-chat-in" maxlength="120" placeholder="Saluda a tu equipo…" autocomplete="off">
+          <button class="btn">Enviar</button>
+        </form>
+      </div>
+      <button id="btn-start" class="btn big primary">🚀 ¡Arrancar la partida!</button>
+      <p id="lobby-wait" class="muted center">El anfitrión 👑 arranca la partida cuando estén todos.</p>
+    </div>
+  </section>
+
+  <!-- ============ JUEGO ============ -->
+  <section id="screen-game" class="screen">
+    <canvas id="game"></canvas>
+
+    <div class="hud-top">
+      <div id="role-chip" class="role-chip"></div>
+      <div class="shield">
+        <div class="shield-label"><span>🛡️ Escudo de la red</span><b id="progress-num">0%</b></div>
+        <div class="progress"><div id="progress-bar"></div></div>
+      </div>
+    </div>
+
+    <div id="task-panel" class="task-panel">
+      <button id="task-toggle" class="task-head"><span>📋 Misiones</span><b id="task-count">0/5</b></button>
+      <ul id="task-list"></ul>
+    </div>
+
+    <canvas id="minimap" width="200" height="130"></canvas>
+
+    <div id="sabotage-banner" class="sabotage-banner hidden"></div>
+    <div id="ghost-banner" class="ghost-banner hidden">👻 Eres un fantasma: tus misiones todavía ayudan al equipo</div>
+
+    <div class="actions">
+      <button id="act-sabotage" class="act hidden" title="Atacar">⚡<span>ATACAR</span></button>
+      <button id="act-port" class="act hidden" title="Puerto secreto (V)">🕳️<span>PUERTO</span></button>
+      <button id="act-infect" class="act danger hidden" title="Infectar (Q)">🦠<span>INFECTAR</span></button>
+      <button id="act-report" class="act warn" title="Reportar (R)">📢<span>REPORTAR</span></button>
+      <button id="act-use" class="act primary" title="Usar (E)">✋<span>USAR</span></button>
+    </div>
+
+    <div id="sabotage-menu" class="sabotage-menu panel hidden">
+      <h4>Elige tu ataque</h4>
+      <button data-sab="ddos" class="btn">🌊 Ataque DDoS<small>Inunda la red de tráfico falso: los defensores casi no ven.</small></button>
+      <button data-sab="ransomware" class="btn">🔒 Ransomware<small>Secuestra los archivos. Si no lo frenan en 45 s, ¡ganas!</small></button>
+      <button id="sab-close" class="btn small ghost-btn">Cancelar</button>
+    </div>
+
+    <div id="joystick" class="joystick hidden"><div id="joystick-knob"></div></div>
+  </section>
+
+  <!-- ============ VENTANA DE MISIÓN ============ -->
+  <div id="task-modal" class="modal hidden">
+    <div class="modal-card panel">
+      <button id="task-close" class="close" aria-label="Cerrar">✕</button>
+      <p class="mission-tag">Misión de seguridad</p>
+      <h2 id="task-title"></h2>
+      <div id="task-body"></div>
+    </div>
+  </div>
+
+  <!-- ============ REUNIÓN ============ -->
+  <div id="meeting" class="overlay hidden">
+    <div class="meeting-card panel">
+      <div id="meeting-head" class="meeting-head"></div>
+      <div class="timer"><div id="meeting-timer"></div></div>
+      <div class="meeting-grid">
+        <div class="meeting-main">
+          <div id="quiz-box" class="quiz-box"></div>
+          <div id="vote-box" class="vote-box hidden">
+            <p class="vote-q">¿Quién es el malware? <span class="small muted">⭐ = acertó la pregunta y su voto vale doble</span></p>
+            <div id="vote-grid" class="vote-grid"></div>
+            <div class="vote-actions">
+              <button id="btn-skip" class="btn">⏭️ No estoy seguro</button>
+              <button id="btn-vote" class="btn primary" disabled>🗳️ Votar</button>
+            </div>
+            <p id="vote-status" class="muted center"></p>
+          </div>
+        </div>
+        <div class="meeting-chat">
+          <div id="chat-log" class="chat-log"></div>
+          <div id="quick-phrases" class="quick"></div>
+          <form id="chat-form" class="chat-form">
+            <input id="chat-in" maxlength="120" placeholder="Cuéntale al equipo lo que viste…" autocomplete="off">
+            <button class="btn" aria-label="Enviar">➤</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ ESCENAS ANIMADAS (rol, alarma, expulsión…) ============ -->
+  <div id="splash" class="overlay cinema hidden">
+    <canvas id="splash-canvas"></canvas>
+    <div id="splash-inner" class="splash"></div>
+  </div>
+
+  <!-- ============ FIN DE PARTIDA ============ -->
+  <div id="gameover" class="overlay hidden">
+    <div class="gameover-card panel">
+      <h1 id="go-title" class="go-title"></h1>
+      <p id="go-reason"></p>
+      <canvas id="go-canvas" height="120"></canvas>
+      <div id="go-roles" class="go-roles"></div>
+      <h3>💡 Lo que aprendimos hoy</h3>
+      <ul id="go-lessons" class="lessons"></ul>
+      <button id="btn-again" class="btn big primary">🔁 Jugar otra vez</button>
+      <p id="go-wait" class="muted center">Esperando a que el anfitrión 👑 abra otra partida…</p>
+    </div>
+  </div>
+
+  <div id="toasts"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="shared/map.js"></script>
+  <script src="js/content.js"></script>
+  <script src="js/robots.js"></script>
+  <script src="js/fx.js"></script>
+  <script src="js/tasks.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
